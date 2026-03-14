@@ -1,4 +1,4 @@
-# Default values for node-app.
+# Default values for devops-api.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: node-app.dev.com
+    - host: devops-api.dev.com
       paths:
         - path: /
           pathType: ImplementationSpecific

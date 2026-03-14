@@ -3,8 +3,8 @@ variables:
   DOCKER_HOST: tcp://localhost:2375/
   DOCKER_TLS_CERTDIR: ""
   CONSUL_HOST: consul-ui
-  JFROG_DOCKER_REPO: halo-staging-docker
-  JFROG_HELM_REPO: halo-staging-helm
+  JFROG_DOCKER_REPO: devops-staging-docker
+  JFROG_HELM_REPO: devops-staging-helm
 
 stages:
   - prepare
@@ -55,11 +55,11 @@ build:
     - cd CI-CD/docker
     - curl -fL https://getcli.jfrog.io | sh
     - ./jfrog config add --url https://$JFROG_CI_REGISTRY --user $JFROG_CI_DEPLOY_USER --password $JFROG_CI_DEPLOY_PASSWORD --interactive=false
-    - docker build --build-arg CONSUL_URL=$CONSUL_HOST --build-arg INSTANCE=$SRC_FOLDER --no-cache -t $JFROG_CI_REGISTRY/$JFROG_DOCKER_REPO/node-app-$IMAGE_NAME:$CI_PIPELINE_IID-$CI_COMMIT_REF_SLUG .
+    - docker build --build-arg CONSUL_URL=$CONSUL_HOST --build-arg INSTANCE=$SRC_FOLDER --no-cache -t $JFROG_CI_REGISTRY/$JFROG_DOCKER_REPO/devops-api-$IMAGE_NAME:$CI_PIPELINE_IID-$CI_COMMIT_REF_SLUG .
   script:
     - docker images
   only:
-    - HALO-5815
+    - dev
   except:
     - master
 
@@ -69,9 +69,9 @@ build:
   dependencies:
     - build
   script:
-    - ./jfrog rt dp $JFROG_CI_REGISTRY/$JFROG_DOCKER_REPO/node-app-$IMAGE_NAME:$CI_PIPELINE_IID-$CI_COMMIT_REF_SLUG $JFROG_DOCKER_REPO --build-name=node-app-$IMAGE_NAME --build-number=$CI_PIPELINE_IID
+    - ./jfrog rt dp $JFROG_CI_REGISTRY/$JFROG_DOCKER_REPO/devops-api-$IMAGE_NAME:$CI_PIPELINE_IID-$CI_COMMIT_REF_SLUG $JFROG_DOCKER_REPO --build-name=devops-api-$IMAGE_NAME --build-number=$CI_PIPELINE_IID
   only:
-    - HALO-1145
+    - dev
 
 
 local-docker-build:
@@ -86,7 +86,7 @@ local-docker-build-push:
 .deploy-local-aws:
   <<: *local
   image:
-    name: registry.devops.telekom.de/halo/halo-core-infrastructure/ubuntu:18.04
+    name: registry.devops.telekom.de/devops/devops-core-infrastructure/ubuntu:18.04
   dependencies:
     - local-docker-build-push
   before_script:
@@ -98,7 +98,7 @@ local-docker-build-push:
     - apt-get install awscli -y
   script:
     - echo $VALUE_FOR_KUBE_CONFIG | base64 -d > kube_config
-    - helm upgrade --kubeconfig=kube_config --install --namespace halo "node-app-${IMAGE_NAME}" CI-CD/helm/ -f CI-CD/helm/docker-registry-jfrog.yaml --set image.repository=${JFROG_CI_REGISTRY}/${JFROG_DOCKER_REPO}/node-app-$IMAGE_NAME,image.env=${IMAGE_NAME},image.tag=${CI_PIPELINE_IID}-${CI_COMMIT_REF_SLUG},imageCredentials.username=${JFROG_CI_DEPLOY_USER},imageCredentials.password=${JFROG_CI_DEPLOY_PASSWORD} --debug $DRY_RUN
+    - helm upgrade --kubeconfig=kube_config --install --namespace devops "devops-api-${IMAGE_NAME}" CI-CD/helm/ -f CI-CD/helm/docker-registry-jfrog.yaml --set image.repository=${JFROG_CI_REGISTRY}/${JFROG_DOCKER_REPO}/devops-api-$IMAGE_NAME,image.env=${IMAGE_NAME},image.tag=${CI_PIPELINE_IID}-${CI_COMMIT_REF_SLUG},imageCredentials.username=${JFROG_CI_DEPLOY_USER},imageCredentials.password=${JFROG_CI_DEPLOY_PASSWORD} --debug $DRY_RUN
 
 deploy-dev-local-aws:
   extends:
@@ -112,4 +112,4 @@ deploy-dev-local-aws:
     - dev-wbench-runner
   when: manual
   only:
-    - HALO-1145
+    - dev
