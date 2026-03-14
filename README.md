@@ -269,7 +269,7 @@ helm upgrade devops-api ./CI-CD/helm -f ./CI-CD/helm/values.yaml
 
 ## ⚙️ Configuration
 
-All configuration is managed through [`values.yaml`](CI-CD/helm/values.yaml). Key parameters:
+All configuration is managed through [`values.yaml`](deploy/helm/values.yaml). Key parameters:
 
 <details>
 <summary><b>📋 Click to expand full configuration reference</b></summary>

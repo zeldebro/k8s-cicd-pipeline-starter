@@ -52,7 +52,7 @@ build:
     - mkdir -p $HOME/.docker/
     #- 'echo "{ \"proxies\": { \"default\": { \"httpProxy\": \"$http_proxy\", \"httpsProxy\": \"$https_proxy\", \"noProxy\": \"$no_proxy\" } } }" > $HOME/.docker/config.json'
     - docker info
-    - cd CI-CD/docker
+    - cd deploy/docker
     - curl -fL https://getcli.jfrog.io | sh
     - ./jfrog config add --url https://$JFROG_CI_REGISTRY --user $JFROG_CI_DEPLOY_USER --password $JFROG_CI_DEPLOY_PASSWORD --interactive=false
     - docker build --build-arg CONSUL_URL=$CONSUL_HOST --build-arg INSTANCE=$SRC_FOLDER --no-cache -t $JFROG_CI_REGISTRY/$JFROG_DOCKER_REPO/devops-api-$IMAGE_NAME:$CI_PIPELINE_IID-$CI_COMMIT_REF_SLUG .
@@ -98,7 +98,7 @@ local-docker-build-push:
     - apt-get install awscli -y
   script:
     - echo $VALUE_FOR_KUBE_CONFIG | base64 -d > kube_config
-    - helm upgrade --kubeconfig=kube_config --install --namespace devops "devops-api-${IMAGE_NAME}" CI-CD/helm/ -f CI-CD/helm/docker-registry-jfrog.yaml --set image.repository=${JFROG_CI_REGISTRY}/${JFROG_DOCKER_REPO}/devops-api-$IMAGE_NAME,image.env=${IMAGE_NAME},image.tag=${CI_PIPELINE_IID}-${CI_COMMIT_REF_SLUG},imageCredentials.username=${JFROG_CI_DEPLOY_USER},imageCredentials.password=${JFROG_CI_DEPLOY_PASSWORD} --debug $DRY_RUN
+    - helm upgrade --kubeconfig=kube_config --install --namespace devops "devops-api-${IMAGE_NAME}" deploy/helm/ -f deploy/helm/docker-registry-jfrog.yaml --set image.repository=${JFROG_CI_REGISTRY}/${JFROG_DOCKER_REPO}/devops-api-$IMAGE_NAME,image.env=${IMAGE_NAME},image.tag=${CI_PIPELINE_IID}-${CI_COMMIT_REF_SLUG},imageCredentials.username=${JFROG_CI_DEPLOY_USER},imageCredentials.password=${JFROG_CI_DEPLOY_PASSWORD} --debug $DRY_RUN
 
 deploy-dev-local-aws:
   extends:
