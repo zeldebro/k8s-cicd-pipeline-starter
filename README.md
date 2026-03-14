@@ -125,7 +125,7 @@ k8s-cicd-pipeline-starter/
 ├── 📄 README.md                          # You are here!
 ├── 📄 .gitlab-ci.yml                     # CI/CD pipeline definition (see below)
 │
-└── CI-CD/
+└── deploy/
     │
     ├── 🐳 docker/
     │   ├── app.js                        # Express.js application — "🚀 DevOps API is live and running!" server
@@ -181,7 +181,7 @@ Get up and running in **under 5 minutes**:
 git clone https://gitlab.com/zeldebro/k8s-cicd-pipeline-starter.git && cd k8s-cicd-pipeline-starter
 
 # 2️⃣  Build & run with Docker
-docker build -t devops-api:latest ./CI-CD/docker
+docker build -t devops-api:latest ./deploy/docker
 docker run -d -p 3000:3000 --name devops-api devops-api:latest
 
 # 3️⃣  Verify
@@ -216,7 +216,7 @@ curl http://localhost:3000
 
 ```bash
 # Navigate to the app directory
-cd CI-CD/docker
+cd deploy/docker
 
 # Install dependencies & start the server
 npm install express
@@ -229,7 +229,7 @@ node app.js
 
 ```bash
 # Build the Docker image
-docker build -t devops-api:latest ./CI-CD/docker
+docker build -t devops-api:latest ./deploy/docker
 
 # Run the container
 docker run -d -p 3000:3000 --name devops-api devops-api:latest
@@ -252,7 +252,7 @@ kubectl create secret docker-registry jfrog-secret \
   --docker-password=<PASSWORD>
 
 # 2. Install the Helm chart
-helm install devops-api ./CI-CD/helm \
+helm install devops-api ./deploy/helm \
   --set image.repository=artifactory.devops.telekom.de/your-repo/devops-api \
   --set image.tag=latest
 
@@ -260,7 +260,7 @@ helm install devops-api ./CI-CD/helm \
 kubectl get pods -l app.kubernetes.io/name=devops-api
 
 # 4. Upgrade with new values
-helm upgrade devops-api ./CI-CD/helm -f ./CI-CD/helm/values.yaml
+helm upgrade devops-api ./deploy/helm -f ./deploy/helm/values.yaml
 ```
 
 ---
@@ -344,7 +344,7 @@ ingress:
 
 ```bash
 # Deploy with production values
-helm upgrade --install devops-api ./CI-CD/helm -f values-production.yaml
+helm upgrade --install devops-api ./deploy/helm -f values-production.yaml
 ```
 
 ---
@@ -421,7 +421,7 @@ variables:
   DOCKER_IMAGE: artifactory.devops.telekom.de/your-repo/devops-api
   DOCKER_TAG: $CI_COMMIT_SHORT_SHA
   HELM_RELEASE: devops-api
-  HELM_CHART: ./CI-CD/helm
+  HELM_CHART: ./deploy/helm
   KUBE_NAMESPACE: default
 
 # ─── BUILD ──────────────────────────────────────────────
@@ -431,7 +431,7 @@ build:
   services:
     - docker:dind
   script:
-    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG ./CI-CD/docker
+    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG ./deploy/docker
     - docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest
   only:
     - main
@@ -442,7 +442,7 @@ test:
   stage: test
   image: node:14
   script:
-    - cd CI-CD/docker
+    - cd deploy/docker
     - npm install express
     - node -e "require('./app.js')" &
     - sleep 2
@@ -495,7 +495,7 @@ deploy:
 The sample application is a minimal **Express.js** server:
 
 ```javascript
-// CI-CD/docker/app.js
+// deploy/docker/app.js
 const express = require('express')
 const app = express()
 
@@ -541,7 +541,7 @@ Try uninstalling first and reinstalling:
 
 ```bash
 helm uninstall devops-api
-helm install devops-api ./CI-CD/helm
+helm install devops-api ./deploy/helm
 ```
 
 </details>
